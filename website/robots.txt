@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /preview/
+Disallow: /dist/
+Disallow: /404.html
+
+# 上线前请把预览域名替换为企业正式域名
+Sitemap: https://ruleproof.example/sitemap.xml

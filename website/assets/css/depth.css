@@ -1,0 +1,301 @@
+/* ==========================================================================
+   深度层：毛玻璃 + 轻三维（附加层，最后加载）
+   只增强质感与层次，不改语义配色、布局与文案；尊重系统减弱动效。
+   配色沿用全站蓝 / TRAE 绿 / 少量橙，不引入新色相。
+   ========================================================================== */
+
+:root {
+  --dp-blue: #4d8dff;
+  --dp-green: #2bd97c;
+  --dp-orange: #ff8a00;
+  --dp-blur: blur(14px) saturate(135%);
+  --dp-blur-sm: blur(8px) saturate(120%);
+  --dp-dark-bg: linear-gradient(155deg, rgba(10, 22, 42, 0.8), rgba(6, 14, 26, 0.88));
+  --dp-dark-border: rgba(158, 191, 245, 0.22);
+  --dp-dark-hi: inset 0 1px 0 rgba(206, 225, 255, 0.14);
+  --dp-dark-shadow: 0 18px 40px rgba(2, 8, 20, 0.42);
+  --dp-light-bg: linear-gradient(155deg, rgba(255, 255, 255, 0.98), rgba(244, 248, 255, 0.96));
+  --dp-light-border: rgba(47, 109, 208, 0.16);
+  --dp-light-hi: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --dp-light-shadow: 0 14px 30px rgba(2, 8, 20, 0.34);
+}
+
+/* ---------- 深色玻璃面：半透明蓝渐变 + 背景模糊 + 顶部高光 + 环境阴影 ---------- */
+.dg-lane,
+.jev-path,
+.arch-layer,
+.engine-principles article,
+.case-outcome,
+.comparison-wrap {
+  background: var(--dp-dark-bg);
+  border-color: var(--dp-dark-border);
+  backdrop-filter: var(--dp-blur);
+  -webkit-backdrop-filter: var(--dp-blur);
+  box-shadow: var(--dp-dark-hi), var(--dp-dark-shadow);
+}
+
+.home-advantages .comparison-wrap {
+  border-color: rgba(77, 141, 255, 0.35);
+  box-shadow: var(--dp-dark-hi), 0 24px 60px rgba(2, 8, 20, 0.5), 0 0 0 1px rgba(77, 141, 255, 0.12), 0 0 44px rgba(36, 120, 255, 0.1);
+}
+
+/* ---------- 第 15 轮：证据模块白卡磨砂玻璃（深色文字保持可读） ---------- */
+.evidence-state,
+.evidence-claim {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(10px) saturate(1.25);
+  -webkit-backdrop-filter: blur(10px) saturate(1.25);
+}
+
+.evidence-stats {
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+}
+
+.dg-lane:hover {
+  box-shadow: var(--dp-dark-hi), 0 24px 48px rgba(2, 8, 20, 0.5);
+}
+
+/* ---------- 浅色玻璃卡：近白半透明 + 模糊 + 高光 +  layered 阴影（深色文字保持可读） ---------- */
+.dg-agent,
+.dg-cnode,
+.jev-gauge-card,
+.aix-paper {
+  background: var(--dp-light-bg);
+  border-color: var(--dp-light-border);
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+  box-shadow: var(--dp-light-hi), var(--dp-light-shadow);
+}
+
+/* 小卡与演示页：只加深层次阴影，不透明底，避免大量模糊开销 */
+.arch-module {
+  box-shadow: var(--dp-light-hi), 0 8px 20px rgba(2, 8, 20, 0.28);
+}
+
+.stage-page {
+  box-shadow: var(--dp-light-hi), 0 24px 60px rgba(2, 8, 20, 0.4);
+}
+
+.dg-bar-tag {
+  background: rgba(12, 26, 46, 0.55);
+  border-color: var(--dp-dark-border);
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+  box-shadow: var(--dp-dark-hi);
+}
+
+/* ---------- 引擎原则卡：轻三维悬浮（原无 hover 位移） ---------- */
+.engine-principles {
+  perspective: 1000px;
+}
+
+.engine-principles article {
+  transition: transform 0.3s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.engine-principles article:hover {
+  transform: translateY(-3px) rotateX(2deg);
+  border-color: rgba(158, 191, 245, 0.34);
+  box-shadow: var(--dp-dark-hi), 0 24px 46px rgba(2, 8, 20, 0.5);
+}
+
+/* ---------- 案例示意图：玻璃面板 + 环境蓝光 + 轻三维倾斜（截图 exemplar） ---------- */
+.case-art {
+  position: relative;
+  overflow: hidden;
+  padding: 22px;
+  border: 1px solid var(--dp-dark-border);
+  border-radius: 16px;
+  background: var(--dp-dark-bg);
+  backdrop-filter: var(--dp-blur);
+  -webkit-backdrop-filter: var(--dp-blur);
+  box-shadow: var(--dp-dark-hi), var(--dp-dark-shadow);
+}
+
+.case-dossier__main .case-art {
+  border-radius: 16px;
+}
+
+.case-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 45%, rgba(77, 141, 255, 0.28), transparent 70%);
+  filter: blur(26px);
+}
+
+.case-svg {
+  position: relative;
+  z-index: 1;
+  transform: perspective(1100px) rotateX(5deg) rotateY(-5deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 12px 20px rgba(2, 8, 20, 0.45));
+  transition: transform 0.45s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.case-art:hover .case-svg {
+  transform: perspective(1100px) rotateX(2deg) rotateY(-2deg);
+}
+
+/* 玻璃纸张 / 折角 / 标签：半透明填充 + 亮边 + 投影，保留前后层次 */
+.case-svg .case-paper {
+  fill: rgba(10, 22, 40, 0.55);
+  stroke: rgba(180, 210, 255, 0.5);
+  filter: drop-shadow(0 6px 12px rgba(2, 8, 20, 0.4));
+}
+
+.case-svg .case-paper--active {
+  stroke: var(--dp-blue);
+  stroke-width: 1.7;
+}
+
+.case-svg .soft {
+  fill: none;
+}
+
+.case-svg .case-fold {
+  fill: rgba(10, 22, 40, 0.6);
+  stroke: rgba(180, 210, 255, 0.5);
+  filter: drop-shadow(0 4px 8px rgba(2, 8, 20, 0.35));
+}
+
+.case-svg .case-tag {
+  fill: rgba(12, 26, 46, 0.5);
+  stroke: rgba(158, 191, 245, 0.3);
+  filter: drop-shadow(0 4px 8px rgba(2, 8, 20, 0.35));
+}
+
+.case-svg .case-hl {
+  stroke: var(--dp-blue);
+  filter: drop-shadow(0 0 5px rgba(77, 141, 255, 0.65));
+}
+
+.case-svg .case-dot {
+  filter: drop-shadow(0 0 4px rgba(118, 171, 255, 0.5));
+}
+
+.case-svg .case-dot--red {
+  fill: var(--dp-orange);
+  filter: drop-shadow(0 0 5px rgba(255, 138, 0, 0.7));
+}
+
+/* ---------- 案例「平台怎么解」：三张玻璃卡 + 轻三维悬浮 ---------- */
+.case-approach-grid {
+  gap: 14px;
+  border: 0;
+  perspective: 1000px;
+}
+
+.case-approach-grid article {
+  padding: 18px 20px 19px;
+  border: 1px solid var(--dp-dark-border);
+  border-radius: 12px;
+  background: var(--dp-dark-bg);
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+  box-shadow: var(--dp-dark-hi), var(--dp-dark-shadow);
+  transition: transform 0.3s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.case-approach-grid article + article {
+  border-left: 1px solid var(--dp-dark-border);
+}
+
+.case-approach-grid article:hover {
+  transform: translateY(-4px) rotateX(3deg);
+  border-color: rgba(158, 191, 245, 0.34);
+  box-shadow: var(--dp-dark-hi), 0 26px 50px rgba(2, 8, 20, 0.5);
+}
+
+/* ---------- 案例痛点：玻璃行卡 + 轻悬浮 ---------- */
+.case-pain-list {
+  display: grid;
+  grid-auto-rows: 1fr;
+  gap: 8px;
+  margin-top: 20px;
+  perspective: 900px;
+}
+
+.case-pain-list li {
+  padding: 12px 14px;
+  border: 1px solid var(--dp-dark-border);
+  border-radius: 10px;
+  background: var(--dp-dark-bg);
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+  box-shadow: var(--dp-dark-hi), 0 10px 24px rgba(2, 8, 20, 0.34);
+  transition: transform 0.28s cubic-bezier(0.22, 0.8, 0.3, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+}
+
+.case-pain-list li:last-child {
+  border: 1px solid var(--dp-dark-border);
+}
+
+.case-pain-list li:hover {
+  transform: translateY(-2px) rotateX(2deg);
+  border-color: rgba(158, 191, 245, 0.32);
+  box-shadow: var(--dp-dark-hi), 0 16px 32px rgba(2, 8, 20, 0.42);
+}
+
+/* ---------- 对比度：玻璃面上的弱色标签提升到 WCAG AA ---------- */
+.dg-agent-cap,
+.aix-paper-meta {
+  color: #5b6b82;
+}
+
+.arch-layer-no {
+  color: #8b9cb5;
+}
+
+/* ---------- 窄屏：收敛倾斜与间距，避免裁切 ---------- */
+@media (max-width: 640px) {
+  .case-art {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .case-dossier__main .case-art {
+    border-radius: 14px;
+  }
+
+  .case-svg {
+    transform: perspective(900px) rotateX(3deg) rotateY(-3deg);
+  }
+
+  .case-art:hover .case-svg {
+    transform: perspective(900px) rotateX(1.5deg) rotateY(-1.5deg);
+  }
+
+  .case-approach-grid {
+    gap: 12px;
+  }
+
+  .case-pain-list {
+    gap: 6px;
+  }
+}
+
+/* ---------- 减弱动效：取消倾斜与悬浮位移，保留静态玻璃质感 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .case-svg,
+  .case-art:hover .case-svg {
+    transform: none;
+    transition: none;
+    filter: drop-shadow(0 8px 16px rgba(2, 8, 20, 0.4));
+  }
+
+  .engine-principles article,
+  .case-approach-grid article,
+  .case-pain-list li {
+    transition: none;
+  }
+
+  .engine-principles article:hover,
+  .case-approach-grid article:hover,
+  .case-pain-list li:hover {
+    transform: none;
+  }
+}

@@ -1,0 +1,55 @@
+/* 无 JavaScript 时的导航与内容回退 */
+@media (max-width: 1060px) {
+  .site-header {
+    position: relative;
+  }
+
+  .header-inner {
+    height: auto;
+    min-height: 66px;
+    flex-wrap: wrap;
+    padding: 14px 0 12px;
+    gap: 10px;
+  }
+
+  .site-nav {
+    position: static;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    order: 4;
+    width: 100%;
+    gap: 8px 18px;
+    padding: 10px 0 0;
+    border-top: 1px solid var(--line);
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .site-nav a {
+    width: auto;
+    padding: 4px 0;
+    border: 0;
+    font-size: 14px;
+  }
+
+  .menu-toggle {
+    display: none;
+  }
+
+  .home-hero {
+    padding-top: 52px;
+  }
+
+  .page-hero {
+    padding-top: 52px;
+  }
+
+  .js [data-reveal],
+  .js .workbench {
+    opacity: 1;
+    transform: none;
+  }
+}

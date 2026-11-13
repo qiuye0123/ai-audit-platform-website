@@ -1,0 +1,643 @@
+/* ==========================================================================
+   提升层：第 14 轮重点模块（附加层，depth 之后加载）
+   解析→立体知识图谱提取 / 规则沉淀→流水线动效 / 质量评测→时间轴 / 第三案例→条款对照矩阵
+   配色沿用全站蓝 / TRAE 绿 / 少量橙，不引入新色相；总体简约，尊重减弱动效。
+   无 JS 时内容完整可见；JS 仅叠加顺序点亮与流动动效。
+   ========================================================================== */
+
+/* ---------- 共享玻璃容器 ---------- */
+.kx-board,
+.rs-board,
+.qt-board {
+  position: relative;
+  margin-top: 36px;
+  padding: 16px;
+  border: 1px solid var(--dp-dark-border);
+  border-radius: 18px;
+  background: var(--dp-dark-bg);
+  backdrop-filter: var(--dp-blur);
+  -webkit-backdrop-filter: var(--dp-blur);
+  box-shadow: var(--dp-dark-hi), var(--dp-dark-shadow);
+}
+
+.kx-board { perspective: 1300px; }
+.rs-board { perspective: 1200px; }
+
+/* ==========================================================================
+   一、第三案例：跨文件条款对照矩阵（cp-）
+   ========================================================================== */
+.case-art--property .case-svg {
+  transform: perspective(1200px) rotateX(7deg) rotateY(3deg);
+}
+
+.case-art--property:hover .case-svg {
+  transform: perspective(1200px) rotateX(3deg) rotateY(1.5deg);
+}
+
+.cp-panel {
+  fill: rgba(10, 22, 40, 0.5);
+  stroke: rgba(158, 191, 245, 0.34);
+  stroke-width: 1.2;
+  filter: drop-shadow(0 6px 14px rgba(2, 8, 20, 0.4));
+}
+
+.case-svg .cp-head {
+  fill: #cfe0ff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.cp-row {
+  stroke: rgba(158, 191, 245, 0.26);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+}
+
+.cp-clause {
+  fill: rgba(77, 141, 255, 0.2);
+  stroke: var(--dp-blue);
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 6px rgba(77, 141, 255, 0.55));
+}
+
+.cp-clause--changed {
+  fill: rgba(255, 138, 0, 0.2);
+  stroke: var(--dp-orange);
+  filter: drop-shadow(0 0 7px rgba(255, 138, 0, 0.6));
+}
+
+.cp-thread {
+  fill: none;
+  stroke: var(--dp-blue);
+  stroke-width: 1.8;
+  stroke-dasharray: 5 6;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 4px rgba(77, 141, 255, 0.6));
+  animation: cp-thread-flow 2.6s linear infinite;
+}
+
+.cp-node {
+  fill: var(--dp-blue);
+  filter: drop-shadow(0 0 5px rgba(77, 141, 255, 0.7));
+}
+
+.cp-risk {
+  fill: var(--dp-orange);
+  filter: drop-shadow(0 0 6px rgba(255, 138, 0, 0.8));
+}
+
+.cp-risk.pulse { animation: cp-risk-pulse 1.9s ease-in-out infinite; }
+
+/* 条款逐列点亮（与第一案例的纵向扫描区分：这里是横向对照 sweep）；滚动入场触发 */
+.case-svg--clause.is-visible .cp-col { animation: cp-col-in 0.6s cubic-bezier(0.22, 0.8, 0.3, 1) both; }
+.case-svg--clause.is-visible .cp-col:nth-child(1) { animation-delay: 0.05s; }
+.case-svg--clause.is-visible .cp-col:nth-child(2) { animation-delay: 0.2s; }
+.case-svg--clause.is-visible .cp-col:nth-child(3) { animation-delay: 0.35s; }
+.case-svg--clause.is-visible .cp-col:nth-child(4) { animation-delay: 0.5s; }
+
+@keyframes cp-thread-flow { to { stroke-dashoffset: -22; } }
+
+@keyframes cp-risk-pulse {
+  0%, 100% { r: 4.5; opacity: 1; }
+  50% { r: 7; opacity: 0.55; }
+}
+
+@keyframes cp-col-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   二、解析与实体抽取：立体知识图谱提取（kx-）
+   ========================================================================== */
+.kx-board {
+  display: grid;
+  grid-template-columns: minmax(0, 1.32fr) minmax(0, 0.68fr);
+  gap: 14px;
+  overflow: hidden;
+}
+
+.kx-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 55% 60% at 38% 45%, rgba(77, 141, 255, 0.16), transparent 70%);
+}
+
+.kx-graph {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  border: 1px solid rgba(158, 191, 245, 0.14);
+  border-radius: 12px;
+  background: rgba(4, 11, 22, 0.5);
+  transform: rotateX(4deg);
+  transform-origin: 50% 60%;
+}
+
+.kx-graph svg { display: block; width: 100%; height: auto; }
+
+.kx-net-edge {
+  stroke: rgba(120, 150, 200, 0.18);
+  stroke-width: 1;
+}
+
+.kx-net-node {
+  fill: rgba(120, 150, 200, 0.3);
+}
+
+.kx-hot-edge {
+  fill: none;
+  stroke: var(--dp-blue);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 4px rgba(77, 141, 255, 0.55));
+}
+
+.kx-hot-node {
+  fill: #0a172a;
+  stroke: var(--dp-blue);
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px rgba(77, 141, 255, 0.6));
+}
+
+.kx-hot-node--core {
+  stroke: var(--dp-green);
+  filter: drop-shadow(0 0 7px rgba(43, 217, 124, 0.6));
+}
+
+.kx-hot-label {
+  fill: #dce8ff;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* JS 就绪后才进入「待提取」暗态，随后顺序点亮 */
+.kx-board.is-ready .kx-hot-edge {
+  stroke-dasharray: 240;
+  stroke-dashoffset: 240;
+  opacity: 0.25;
+  transition: stroke-dashoffset 0.7s ease, opacity 0.5s ease;
+}
+
+.kx-board.is-ready .kx-hot-node,
+.kx-board.is-ready .kx-hot-label {
+  opacity: 0.22;
+  transition: opacity 0.5s ease, filter 0.5s ease;
+}
+
+.kx-board.is-ready .kx-hot-edge.is-lit { stroke-dashoffset: 0; opacity: 0.95; }
+.kx-board.is-ready .kx-hot-node.is-lit,
+.kx-board.is-ready .kx-hot-label.is-lit { opacity: 1; }
+
+.kx-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  border-radius: 12px;
+  background: linear-gradient(100deg, transparent 40%, rgba(77, 141, 255, 0.14) 50%, transparent 60%);
+  background-size: 240% 100%;
+  animation: kx-scan-sweep 5.5s ease-in-out infinite;
+}
+
+@keyframes kx-scan-sweep {
+  0% { background-position: 130% 0; }
+  55%, 100% { background-position: -40% 0; }
+}
+
+/* 提取结果面板 */
+.kx-extract {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 7px;
+  padding: 13px;
+  border: 1px solid rgba(158, 191, 245, 0.16);
+  border-radius: 12px;
+  background: rgba(6, 15, 28, 0.6);
+}
+
+.kx-extract-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.kx-extract-head svg { width: 16px; height: 16px; color: var(--dp-green); }
+
+.kx-entity {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 9px 10px;
+  border: 1px solid rgba(158, 191, 245, 0.14);
+  border-radius: 8px;
+  background: rgba(10, 22, 42, 0.5);
+  transition: border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease, transform 0.4s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+
+.kx-entity svg { width: 18px; height: 18px; color: var(--muted); transition: color 0.4s ease; }
+.kx-entity b { display: block; color: var(--ink); font-size: 14px; font-weight: 550; }
+.kx-entity span { display: block; margin-top: 1px; color: var(--body); font-size: 13px; line-height: 1.4; }
+
+.kx-board.is-ready .kx-entity { opacity: 0.3; transform: translateX(8px); }
+
+.kx-entity.is-lit {
+  opacity: 1 !important;
+  transform: translateX(0) !important;
+  border-color: rgba(43, 217, 124, 0.4);
+  background: rgba(12, 32, 26, 0.5);
+  box-shadow: 0 0 0 1px rgba(43, 217, 124, 0.12), 0 8px 20px rgba(2, 8, 20, 0.34);
+}
+
+.kx-entity.is-lit svg { color: var(--dp-green); }
+
+.kx-location {
+  margin-top: 2px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: rgba(77, 141, 255, 0.1);
+  color: #a8c9ff;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.kx-types { display: flex; flex-wrap: wrap; gap: 5px; }
+.kx-types span {
+  padding: 4px 8px;
+  border: 1px solid rgba(158, 191, 245, 0.16);
+  border-radius: 5px;
+  color: var(--body);
+  font-size: 12.5px;
+}
+
+/* ==========================================================================
+   三、规则沉淀：高级流水线动效（rs-）
+   ========================================================================== */
+.rs-board { overflow: hidden; }
+
+.rs-board::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(77, 141, 255, 0.12), transparent 70%);
+}
+
+.rs-flow {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.rs-stage {
+  position: relative;
+  display: flex;
+  min-width: 0;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 13px 12px;
+  border: 1px solid rgba(158, 191, 245, 0.16);
+  border-radius: 11px;
+  background: rgba(7, 17, 32, 0.62);
+  transition: border-color 0.45s ease, box-shadow 0.45s ease, transform 0.45s cubic-bezier(0.22, 0.8, 0.3, 1), background 0.45s ease;
+}
+
+.rs-stage-no {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+}
+
+.rs-stage-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink);
+  font-size: 14.5px;
+  font-weight: 550;
+}
+
+.rs-stage-title svg { width: 16px; height: 16px; color: var(--dp-blue); }
+
+.rs-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.rs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid rgba(158, 191, 245, 0.18);
+  border-radius: 6px;
+  background: rgba(10, 22, 42, 0.6);
+  color: var(--body);
+  font-size: 12.5px;
+}
+.rs-chip svg { width: 13px; height: 13px; color: var(--dp-orange); }
+
+.rs-code {
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: rgba(3, 9, 18, 0.7);
+  border: 1px solid rgba(158, 191, 245, 0.12);
+  color: #a8c9ff;
+  font-size: 12.5px;
+  line-height: 1.7;
+}
+.rs-code span { color: var(--dp-green); }
+.rs-code b { display: block; margin-top: 4px; color: var(--muted); font-weight: 400; font-size: 12px; }
+
+.rs-tests { display: flex; flex-direction: column; gap: 5px; }
+.rs-test {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: rgba(10, 22, 42, 0.5);
+  color: var(--body);
+  font-size: 12.5px;
+}
+.rs-test svg { width: 14px; height: 14px; color: var(--muted); transition: color 0.4s ease; }
+
+.rs-approve {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  border: 1px dashed rgba(255, 138, 0, 0.4);
+  background: rgba(255, 138, 0, 0.07);
+  color: #ffc78a;
+  font-size: 12.5px;
+}
+.rs-approve svg { width: 16px; height: 16px; color: var(--dp-orange); }
+
+.rs-version {
+  position: relative;
+  padding: 7px 9px;
+  border-radius: 6px;
+  border: 1px solid rgba(158, 191, 245, 0.16);
+  background: rgba(10, 22, 42, 0.55);
+  color: var(--body);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.rs-version + .rs-version { margin-top: -3px; }
+.rs-version--top {
+  border-color: rgba(43, 217, 124, 0.4);
+  background: rgba(12, 32, 26, 0.55);
+  color: #b6f0cf;
+  box-shadow: 0 6px 16px rgba(2, 8, 20, 0.4);
+}
+
+.rs-facts { display: flex; flex-direction: column; gap: 3px; margin-top: 2px; }
+.rs-facts span { color: var(--muted); font-size: 11.5px; line-height: 1.4; }
+
+/* 连接件 +  traveling pulse */
+.rs-link {
+  position: relative;
+  flex: 0 0 26px;
+  align-self: center;
+  height: 2px;
+  margin: 0 -1px;
+  background: rgba(158, 191, 245, 0.2);
+  overflow: visible;
+}
+
+.rs-link::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dp-blue);
+  box-shadow: 0 0 8px rgba(77, 141, 255, 0.9);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+
+.rs-board.is-ready .rs-stage { opacity: 0.4; transform: translateY(6px); }
+
+.rs-stage.is-active {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  border-color: rgba(77, 141, 255, 0.45);
+  background: rgba(10, 24, 46, 0.72);
+  box-shadow: var(--dp-dark-hi), 0 14px 30px rgba(2, 8, 20, 0.44);
+}
+
+.rs-stage.is-active .rs-test svg { color: var(--dp-green); }
+
+.rs-link.is-flow::after { animation: rs-pulse-travel 0.6s ease-out; }
+
+@keyframes rs-pulse-travel {
+  0% { left: 0; opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
+/* ==========================================================================
+   四、质量评测：横向时间轴（qt-）
+   ========================================================================== */
+.qt-board { padding: 22px 18px 18px; }
+
+.qt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--ink);
+  font-size: 15px;
+}
+.qt-head span:last-child { color: #8fb5f1; }
+
+.qt-timeline {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  padding-top: 34px;
+}
+
+.qt-spine {
+  position: absolute;
+  top: 16px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(158, 191, 245, 0.16);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.qt-spine-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: calc(var(--qt-p, 1) * 100%);
+  background: linear-gradient(90deg, var(--dp-blue), var(--dp-green));
+  box-shadow: 0 0 10px rgba(77, 141, 255, 0.6);
+  transition: width 0.32s linear, height 0.32s linear;
+}
+
+.qt-step {
+  position: relative;
+  min-width: 0;
+}
+
+.qt-step::before {
+  content: "";
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 1px;
+  height: 9px;
+  background: rgba(158, 191, 245, 0.22);
+  transform: translateX(-50%);
+  transition: background 0.4s ease;
+}
+
+.qt-step.is-visible::before { background: rgba(43, 217, 124, 0.5); }
+
+.qt-dot {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(158, 191, 245, 0.4);
+  background: #07101d;
+  transform: translateX(-50%);
+  z-index: 2;
+  transition: border-color 0.4s ease, background 0.4s ease, box-shadow 0.4s ease;
+}
+
+.qt-step.is-visible .qt-dot {
+  border-color: var(--dp-green);
+  background: var(--dp-green);
+  box-shadow: 0 0 0 4px rgba(43, 217, 124, 0.16), 0 0 12px rgba(43, 217, 124, 0.6);
+}
+
+.qt-card {
+  height: 100%;
+  padding: 15px 16px;
+  border: 1px solid rgba(158, 191, 245, 0.16);
+  border-radius: 12px;
+  background: rgba(7, 18, 34, 0.66);
+  backdrop-filter: var(--dp-blur-sm);
+  -webkit-backdrop-filter: var(--dp-blur-sm);
+  box-shadow: var(--dp-dark-hi), 0 12px 28px rgba(2, 8, 20, 0.36);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 0.8, 0.3, 1), border-color 0.4s ease;
+}
+
+.qt-board.is-ready .qt-step .qt-card { opacity: 0; transform: translateY(16px); }
+
+.qt-step.is-visible .qt-card {
+  opacity: 1 !important;
+  transform: translateY(0) !important;
+  border-color: rgba(158, 191, 245, 0.3);
+}
+
+.qt-card .quality-card-head { flex-wrap: wrap; row-gap: 2px; }
+.qt-card .quality-card-head h3 { font-size: 18px; }
+.qt-card .quality-card-head em { font-size: 13px; }
+.qt-card .quality-card-lead { font-size: 14px; }
+.qt-card .quality-negative-list > div { grid-template-columns: 74px minmax(0, 1fr); gap: 8px; }
+
+.qt-gate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 20px;
+  padding: 13px;
+  border-radius: 11px;
+  border: 1px solid rgba(43, 217, 124, 0.34);
+  background: rgba(12, 32, 26, 0.5);
+  color: #b6f0cf;
+  font-size: 14.5px;
+  font-weight: 550;
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+.qt-gate svg { width: 18px; height: 18px; color: var(--dp-green); }
+
+.qt-board.is-done .qt-gate {
+  border-color: rgba(43, 217, 124, 0.6);
+  box-shadow: 0 0 0 1px rgba(43, 217, 124, 0.18), 0 0 26px rgba(43, 217, 124, 0.16);
+}
+
+/* ==========================================================================
+   响应式
+   ========================================================================== */
+@media (max-width: 1060px) {
+  .kx-board { grid-template-columns: 1fr; }
+  .kx-graph { transform: none; }
+
+  .rs-flow { flex-wrap: wrap; gap: 10px; }
+  .rs-stage { flex: 1 1 calc(50% - 5px); }
+  .rs-link { display: none; }
+
+  .qt-timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; row-gap: 42px; }
+  .qt-spine { display: none; }
+}
+
+@media (max-width: 760px) {
+  .kx-board, .rs-board, .qt-board { padding: 12px; border-radius: 14px; margin-top: 26px; }
+
+  .rs-stage { flex: 1 1 100%; }
+
+  .qt-timeline { display: block; padding-top: 4px; }
+  .qt-spine { display: block; top: 0; bottom: 0; left: 11px; right: auto; width: 2px; height: auto; }
+  .qt-spine-fill { width: 100%; height: calc(var(--qt-p, 1) * 100%); }
+  .qt-step { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: start; margin-bottom: 16px; }
+  .qt-step:last-of-type { margin-bottom: 0; }
+  .qt-step::before { display: none; }
+  .qt-dot { position: static; grid-column: 1; justify-self: center; margin-top: 16px; transform: none; }
+  .qt-card { grid-column: 2; height: auto; }
+  .qt-board.is-ready .qt-step .qt-card { transform: translateX(14px); }
+  .qt-step.is-visible .qt-card { transform: translateX(0) !important; }
+
+  .qt-head { flex-direction: column; align-items: flex-start; gap: 3px; font-size: 14px; }
+}
+
+/* ==========================================================================
+   减弱动效：取消流动/扫描/位移，保留静态完整内容
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .cp-thread, .cp-risk.pulse, .case-svg--clause .cp-col, .kx-scan { animation: none; }
+  .case-art--property .case-svg,
+  .case-art--property:hover .case-svg { transform: none; }
+
+  .kx-board.is-ready .kx-hot-edge { stroke-dashoffset: 0; opacity: 0.95; transition: none; }
+  .kx-board.is-ready .kx-hot-node,
+  .kx-board.is-ready .kx-hot-label,
+  .kx-board.is-ready .kx-entity { opacity: 1; transform: none; transition: none; }
+
+  .rs-board.is-ready .rs-stage { opacity: 1; transform: none; transition: none; }
+  .rs-link.is-flow::after { animation: none; opacity: 0; }
+
+  .qt-spine-fill { transition: none; }
+  .qt-board.is-ready .qt-step .qt-card { opacity: 1; transform: none; transition: none; }
+  .qt-step .qt-dot, .qt-step::before, .qt-gate { transition: none; }
+}
